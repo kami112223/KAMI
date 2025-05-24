@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>معرض عام</title>
+<style>
+  /* --- تصميم عام --- */
+  body {
+    background: #121226;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #ddd;
+    margin: 0; padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 3rem;
+    margin-bottom: 25px;
+    color: #a8a0ff;
+    text-shadow: 0 0 10px #8c85ff;
+  }
+  /* --- أزرار وحقول --- */
+  .upload-btn, .filter-btn, button.sort-btn {
+    display: inline-flex;
+    align-items: center;
+    background: #5a3eae;
+    padding: 12px 25px;
+    font-size: 1.1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    border: none;
+    color: #fff;
+    box-shadow: 0 6px 15px #5a3eae99;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    margin: 5px 10px;
+    user-select: none;
+  }
+  .upload-btn:hover, .filter-btn:hover, button.sort-btn:hover {
+    background: #7c62e0;
+    box-shadow: 0 8px 20px #7c62e099;
+  }
+  .upload-btn svg {
+    margin-left: 10px;
+    stroke: #fff;
+  }
+  input[type="file"] {
+    display: none;
+  }
+  .filter-container, .sort-container {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  /* --- صندوق البحث --- */
+  .search-container {
+    text-align: center;
+    margin-bottom: 25px;
+  }
+  .search-input {
+    width: 280px;
+    max-width: 90%;
+    padding: 12px 15px;
+    font-size: 1rem;
+    border-radius: 30px;
+    border: none;
+    box-shadow: inset 0 0 8px #5a3eae88;
+    background: #292850;
+    color: #eee;
+    transition: box-shadow 0.3s ease;
+  }
+  .search-input::placeholder {
+    color: #aaa;
+  }
+  .search-input:focus {
+    outline: none;
+    box-shadow: 0 0 15px #7c62e0ff;
+    background: #3a3b68;
+  }
+  /* --- شبكة عرض الملفات --- */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+    gap: 26px;
+  }
+  /* --- كارد احترافي --- */
+  .card {
+    background: linear-gradient(135deg, #5a3eaecc, #462f9bcc);
+    border-radius: 26px;
+    box-shadow:
+      0 10px 40px rgba(90, 62, 174, 0.6),
+      inset 0 0 30px rgba(255, 255, 255, 0.18);
+    padding: 22px;
+    color: #e6e6ff;
+    position: relative;
+    overflow: hidden;
+    transition:
+      transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card:hover {
+    transform: translateY(-14px) scale(1.06);
+    box-shadow:
+      0 20px 50px rgba(90, 62, 174, 0.95),
+      inset 0 0 40px rgba(255, 255, 255, 0.3);
+  }
+  .card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 25px rgb(90 62 174 / 0.5);
+    transition: transform 0.4s ease;
+  }
+  .card:hover img {
+    transform: scale(1.1) translateY(-8px);
+  }
+  .file-placeholder {
+    height: 180px;
+    background: #3f3b57;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: #b0aee7;
+    margin-bottom: 20px;
+    box-shadow: inset 0 0 15px #3f3b57cc;
+    user-select: none;
+  }
+  .card .file-icon {
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+  }
+  /* --- تفاصيل الملف --- */
+  .file-details {
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+    line-height: 1.4;
+  }
+  /* --- روابط وأزرار --- */
+  .actions {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .actions a, .actions button {
+    font-size: 0.9rem;
+    text-decoration: none;
+    color: #8da0ff;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 18px;
+    transition: background 0.3s ease, color 0.3s ease;
+    user-select: none;
+  }
+  .actions a:hover, .actions button:hover {
+    color: #d0d7ff;
+    background: rgba(141, 160, 255, 0.2);
+  }
+  button.delete-btn {
+    background: #c84b4b;
+    color: white !important;
+    transition: background 0.3s ease;
+  }
+  button.delete-btn:hover {
+    background: #ff6161;
+  }
+  /* --- رموز الملفات --- */
+  .icon-img::before { content: "🖼️"; }
+  .icon-pdf::before { content: "📕"; }
+  .icon-doc::before { content: "📄"; }
+  .icon-xls::before { content: "📊"; }
+  .icon-txt::before { content: "📜"; }
+  .icon-zip::before { content: "🗜️"; }
+  .icon-audio::before { content: "🎵"; }
+  .icon-video::before { content: "🎬"; }
+  .icon-other::before { content: "📁"; }
+
+  .file-icon {
+    display: block;
+    text-align: center;
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+  }
+
+  /* --- منطقة السحب والإفلات --- */
+  #drop-area {
+    border: 3px dashed #5a3eae88;
+    border-radius: 25px;
+    padding: 40px;
+    max-width: 600px;
+    margin: 0 auto 40px;
+    color: #aaa;
+    text-align: center;
+    font-size: 1.2rem;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+  }
+  #drop-area.dragover {
+    border-color: #7c62e0;
+    background-color: #3a3b68;
+    color: #e0e0ff;
+  }
+</style>
+</head>
+<body>
+
+<h1>📁 معرض الملفات والصور الاحترافي والمتطور</h1>
+
+<!-- منطقة السحب والإفلات -->
+<div id="drop-area">
+  اسحب وأفلت ملفاتك هنا أو استخدم زر "رفع الملفات"
+</div>
+
+<label class="upload-btn" for="uploadFiles">
+  رفع الملفات
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-3-3 3 3 3-3M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+</label>
+<input type="file" id="uploadFiles" multiple />
+
+<div class="search-container">
+  <input type="text" id="searchInput" class="search-input" placeholder="ابحث في أسماء الملفات ..." />
+</div>
+
+<div class="filter-container">
+  <button class="filter-btn" onclick="filterFiles('all')">الكل</button>
+  <button class="filter-btn" onclick="filterFiles('image')">صور فقط</button>
+  <button class="filter-btn" onclick="filterFiles('pdf')">PDF فقط</button>
+  <button class="filter-btn" onclick="filterFiles('doc')">Word فقط</button>
+  <button class="filter-btn" onclick="filterFiles('xls')">Excel فقط</button>
+  <button class="filter-btn" onclick="filterFiles('audio')">صوت فقط</button>
+  <button class="filter-btn" onclick="filterFiles('video')">فيديو فقط</button>
+  <button class="filter-btn" onclick="filterFiles('file')">ملفات فقط</button>
+</div>
+
+<div class="sort-container">
+  <button class="sort-btn" onclick="sortFiles('name')">الترتيب بالاسم ↑↓</button>
+  <button class="sort-btn" onclick="sortFiles('size')">الترتيب بالحجم ↑↓</button>
+  <button class="sort-btn" onclick="sortFiles('type')">الترتيب بالنوع ↑↓</button>
+</div>
+
+<div class="gallery" id="gallery"></div>
+
+<script>
+  const gallery = document.getElementById('gallery');
+  const uploadFiles = document.getElementById('uploadFiles');
+  const searchInput = document.getElementById('searchInput');
+  const dropArea = document.getElementById('drop-area');
+
+  let filesList = [];
+  let currentFilter = 'all';
+  let sortOrder = {key:'name', asc:true};
+
+  // --- دالة لإظهار الحجم بوحدات مناسبة ---
+  function formatFileSize(size) {
+    if (size < 1024) return size + " بايت";
+    else if (size < 1024 * 1024) return (size / 1024).toFixed(1) + " كيلوبايت";
+    else if (size < 1024 * 1024 * 1024) return (size / (1024 * 1024)).toFixed(2) + " ميغابايت";
+    else return (size / (1024 * 1024 * 1024)).toFixed(2) + " غيغابايت";
+  }
+
+  // --- دالة لتحديد نوع الملف ---
+  function getFileType(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    const type = file.type;
+
+    if (type.startsWith('image/')) return 'image';
+    if (type === 'application/pdf' || ext === 'pdf') return 'pdf';
+    if (
+      type === 'application/msword' ||
+      type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      ext === 'doc' || ext === 'docx'
+    ) return 'doc';
+    if (
+      type === 'application/vnd.ms-excel' ||
+      type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      ext === 'xls' || ext === 'xlsx'
+    ) return 'xls';
+    if (type.startsWith('audio/')) return 'audio';
+    if (type.startsWith('video/')) return 'video';
+    if (ext === 'txt') return 'txt';
+    if (ext === 'zip' || ext === 'rar' || ext === '7z') return 'zip';
+    return 'file';
+  }
+
+  // --- أيقونات حسب نوع الملف ---
+  function getIconClass(type) {
+    switch(type) {
+      case 'image': return 'icon-img';
+      case 'pdf': return 'icon-pdf';
+      case 'doc': return 'icon-doc';
+      case 'xls': return 'icon-xls';
+      case 'txt': return 'icon-txt';
+      case 'zip': return 'icon-zip';
+      case 'audio': return 'icon-audio';
+      case 'video': return 'icon-video';
+      default: return 'icon-other';
+    }
+  }
+
+  // --- عرض الملفات في المعرض ---
+  function displayFiles() {
+    gallery.innerHTML = '';
+
+    let filtered = filesList.filter(f => {
+      // تطبيق الفلتر حسب النوع
+      if (currentFilter !== 'all' && currentFilter !== f.type) return false;
+      // تطبيق البحث على الاسم
+      if (!f.name.toLowerCase().includes(searchInput.value.toLowerCase())) return false;
+      return true;
+    });
+
+    // الترتيب
+    filtered.sort((a,b) => {
+      let valA = a[sortOrder.key], valB = b[sortOrder.key];
+      if (sortOrder.key === 'name' || sortOrder.key === 'type') {
+        valA = valA.toLowerCase();
+        valB = valB.toLowerCase();
+      }
+      if (valA < valB) return sortOrder.asc ? -1 : 1;
+      if (valA > valB) return sortOrder.asc ? 1 : -1;
+      return 0;
+    });
+
+    if (filtered.length === 0) {
+      gallery.innerHTML = '<p style="text-align:center; color:#888; font-size:1.3rem;">لا توجد ملفات مطابقة.</p>';
+      return;
+    }
+
+    filtered.forEach(file => {
+      const card = document.createElement('div');
+      card.classList.add('card');
+
+      if (file.type === 'image') {
+        const img = document.createElement('img');
+        img.src = file.url;
+        img.alt = file.name;
+        card.appendChild(img);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'file-placeholder';
+        const icon = document.createElement('span');
+        icon.className = 'file-icon ' + getIconClass(file.type);
+        placeholder.appendChild(icon);
+        const nameText = document.createElement('div');
+        nameText.textContent = file.name;
+        nameText.style.fontWeight = '600';
+        placeholder.appendChild(nameText);
+        card.appendChild(placeholder);
+      }
+
+      // تفاصيل إضافية
+      const details = document.createElement('div');
+      details.className = 'file-details';
+      details.innerHTML = `<b>الاسم:</b> ${file.name} <br> <b>الحجم:</b> ${formatFileSize(file.size)} <br> <b>النوع:</b> ${file.type}`;
+      card.appendChild(details);
+
+      // روابط الإجراءات
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      // زر تنزيل (لجميع الملفات)
+      const downloadLink = document.createElement('a');
+      downloadLink.href = file.url;
+      downloadLink.download = file.name;
+      downloadLink.textContent = "تنزيل";
+      downloadLink.title = "تنزيل الملف";
+      actions.appendChild(downloadLink);
+
+      // زر الحذف
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = "حذف";
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.title = "حذف الملف من العرض";
+      deleteBtn.onclick = () => {
+        filesList = filesList.filter(f => f.id !== file.id);
+        URL.revokeObjectURL(file.url);
+        displayFiles();
+      };
+      actions.appendChild(deleteBtn);
+
+      card.appendChild(actions);
+      gallery.appendChild(card);
+    });
+  }
+
+  // --- إضافة ملفات ---
+  function addFiles(newFiles) {
+    for (const file of newFiles) {
+      // تخزين الملف مع رابط URL لإنشاء preview للصور
+      filesList.push({
+        id: crypto.randomUUID(),
+        file: file,
+        name: file.name,
+        size: file.size,
+        type: getFileType(file),
+        url: URL.createObjectURL(file)
+      });
+    }
+    displayFiles();
+  }
+
+  // --- أحداث الرفع عن طريق الزر ---
+  uploadFiles.addEventListener('change', e => {
+    addFiles(e.target.files);
+    uploadFiles.value = ''; // إعادة تعيين قيمة العنصر للسماح برفع نفس الملف مرة أخرى
+  });
+
+  // --- أحداث السحب والإفلات ---
+  dropArea.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropArea.classList.add('dragover');
+  });
+  dropArea.addEventListener('dragleave', e => {
+    dropArea.classList.remove('dragover');
+  });
+  dropArea.addEventListener('drop', e => {
+    e.preventDefault();
+    dropArea.classList.remove('dragover');
+    if (e.dataTransfer.files.length > 0) {
+      addFiles(e.dataTransfer.files);
+    }
+  });
+
+  // --- فلترة الملفات ---
+  function filterFiles(type) {
+    currentFilter = type;
+    displayFiles();
+  }
+
+  // --- ترتيب الملفات ---
+  function sortFiles(key) {
+    if (sortOrder.key === key) {
+      sortOrder.asc = !sortOrder.asc;
+    } else {
+      sortOrder.key = key;
+      sortOrder.asc = true;
+    }
+    displayFiles();
+  }
+
+  // --- بحث مباشر أثناء الكتابة ---
+  searchInput.addEventListener('input', () => {
+    displayFiles();
+  });
+
+  // --- بدء المعرض فارغ --
+  displayFiles();
+</script>
+
+</body>
+</html>
